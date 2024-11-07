@@ -23,7 +23,7 @@
     <!-- 추가/삭제/저장 -->
     <div class="buttons">
       <button @click="addSubject">추가</button>
-      <button @click="deletedSubject">삭제</button>
+      <button @click="deleteSubject">삭제</button>
       <button @click="saveSubject">저장</button>
     </div>
 
@@ -48,6 +48,7 @@
       </thead>
       <tbody>
         <!-- 과목 목록 -->
+        <!-- 정렬 -->
         <tr v-for="(subject, index) in subjects.sort((a, b) => {
           const isuComparison = a.isu.localeCompare(b.isu);
           if (isuComparison !== 0) return isuComparison;
@@ -56,7 +57,7 @@
           if (pilsuComparison !== 0) return pilsuComparison;
 
           return a.name.localeCompare(b.name);
-        })" :key="index">
+        })" :key="index" :class="{ selected: selectedIndex === index }" @click="selectSubject(index, $event)">
           <td>{{ subject.isu }}</td>
           <td>{{ subject.pilsu }}</td>
           <td class="subjectName">{{ subject.name }}</td>
@@ -150,7 +151,6 @@
 export default {
   name: 'ReportCard',
 
-
   data() {
     return {
       // 학년 선택: 기본값 1학년으로 설정
@@ -163,7 +163,7 @@ export default {
         isu: '교양',
         pilsu: '선택',
         name: '',
-        credit: 0,
+        credit: 1,
         attendance: 0,
         assignment: 0,
         midterm: 0,
@@ -173,6 +173,8 @@ export default {
       addingSubject: false,
       // 오류 메시지를 저장할 변수
       errorMessage: '',
+      // 선택된 과목 인덱스
+      selectedIndex: null,
     };
   },
 
@@ -208,15 +210,6 @@ export default {
           return;
         }
 
-        // 입력 범위 지정
-        if (this.newSubject.attendance < 0 || this.newSubject.attendance > 20 ||
-          this.newSubject.assignment < 0 || this.newSubject.assignment > 20 ||
-          this.newSubject.midterm < 0 || this.newSubject.midterm > 30 ||
-          this.newSubject.final < 0 || this.newSubject.final > 30) {
-          this.errorMessage = '점수는 지정된 범위 내에서 입력해야 합니다.';
-          return;
-        }
-
         this.subjects.push({ ...this.newSubject });
 
         // 새로운 과목 입력란 초기화
@@ -224,7 +217,7 @@ export default {
           isu: '교양',
           pilsu: '선택',
           name: '',
-          credit: 0,
+          credit: 1,
           attendance: 0,
           assignment: 0,
           midterm: 0,
@@ -253,6 +246,21 @@ export default {
         return;
       }
 
+      // 과목명이 중복될 경우('F' 제외)
+      const duplicateSubject = this.subjects.find(
+        (subject) => subject.name === this.newSubject.name
+      );
+
+      if (duplicateSubject) {
+        const duplicateGrade = this.calGrade(duplicateSubject);
+        //console.log('이미 저장된 과목의 성적:', duplicateGrade);
+
+        if (duplicateGrade !== 'F') {
+          this.errorMessage = '이미 존재하는 과목명입니다.';
+          return;
+        }
+      }
+
       // subjects 배열에 추가
       if (this.addingSubject) {
         // 과목 정보가 비어있지 않다면 추가
@@ -273,6 +281,26 @@ export default {
       }
       // 추가 입력란 숨김
       this.addingSubject = false;
+    },
+
+    //선택한 과목 삭제
+    deleteSubject() {
+      // 선택된 인덱스가 null이 아닐 경우 삭제
+      if (this.selectedIndex !== null) {
+        this.subjects.splice(this.selectedIndex, 1);
+         // 선택 초기화
+        this.selectedIndex = null; 
+      } else {
+        // 선택한 과목이 없을 경우 에러 메세지 출력
+        this.errorMessage = '삭제할 과목을 선택해주세요.';
+      }
+    },
+
+     // 과목 선택
+     selectSubject(index) {
+      //console.log('선택된 목록의 인덱스: ', index);
+      console.log(event.target.className);
+      this.selectedIndex = index;
     },
 
     // 총점 계산
@@ -304,6 +332,36 @@ export default {
       if (total >= 65) return 'D+';
       if (total >= 60) return 'D0';
       return 'F';
+    }
+  },
+
+  watch: {
+    // 학점이 0일때 예외처리
+    'newSubject.credit'(value) {
+      if (value < 1) {
+        this.newSubject.credit = 1;
+        this.errorMessage = '학점은 1 이상이어야 합니다.';
+      } else {
+        this.errorMessage = '';
+      }
+    },
+
+    // 점수 입력 범위 제한
+    'newSubject.attendance'(value) {
+      if (value < 0) this.newSubject.attendance = 0;
+      else if (value > 20) this.newSubject.attendance = 20;
+    },
+    'newSubject.assignment'(value) {
+      if (value < 0) this.newSubject.assignment = 0;
+      else if (value > 20) this.newSubject.assignment = 20;
+    },
+    'newSubject.midterm'(value) {
+      if (value < 0) this.newSubject.midterm = 0;
+      else if (value > 30) this.newSubject.midterm = 30;
+    },
+    'newSubject.final'(value) {
+      if (value < 0) this.newSubject.final = 0;
+      else if (value > 30) this.newSubject.final = 30;
     }
   },
 
@@ -414,6 +472,7 @@ tbody tr:nth-child(even) {
   background-color: hwb(208 80% 2%);
 }
 
+/* 성적이 F일 경우 */
 .f-grade {
   color: red;
 }
@@ -422,6 +481,7 @@ tfoot {
   background-color: lightsteelblue
 }
 
+/* 에러 메세지 */
 .error {
   border: 2px solid red;
   width: 50%;
@@ -430,5 +490,10 @@ tfoot {
   text-align: center;
   padding: 5px;
   font-size: 16px;
+}
+
+/* 선택된 행에 파란색 테두리 적용 */
+.selected {
+  border: 1px solid blue !important;
 }
 </style>
