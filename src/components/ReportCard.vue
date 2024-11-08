@@ -156,6 +156,13 @@ export default {
       // 학년 선택: 기본값 1학년으로 설정
       selectedGrade: "1학년",
 
+      // 학년별 과목 리스트
+      subjectsByGrade: {
+        "1학년": [],
+        "2학년": [],
+        "3학년": []
+      },
+
       // 기존 과목 리스트
       subjects: [],
       // 새로운 과목 입력을 위한 데이터 객체
@@ -180,6 +187,11 @@ export default {
 
 
   methods: {
+    // 학년 선택 시 subjects에 해당 학년 데이터 할당
+    selectGrade() {
+      this.subjects = this.subjectsByGrade[this.selectedGrade];
+    },
+
     // 입력된 학점 확인
     checkCredit() {
       if (this.newSubject.credit <= 0) {
@@ -211,6 +223,8 @@ export default {
         }
 
         this.subjects.push({ ...this.newSubject });
+        // 해당 학년의 과목 리스트 갱신
+        this.subjectsByGrade[this.selectedGrade] = this.subjects;
 
         // 새로운 과목 입력란 초기화
         this.newSubject = {
@@ -261,6 +275,9 @@ export default {
         }
       }
 
+      // 현재 학년 데이터 저장
+      this.subjectsByGrade[this.selectedGrade] = this.subjects;
+
       // subjects 배열에 추가
       if (this.addingSubject) {
         // 과목 정보가 비어있지 않다면 추가
@@ -288,16 +305,18 @@ export default {
       // 선택된 인덱스가 null이 아닐 경우 삭제
       if (this.selectedIndex !== null) {
         this.subjects.splice(this.selectedIndex, 1);
-         // 선택 초기화
-        this.selectedIndex = null; 
+        // 학년별 데이터 업데이트
+        this.subjectsByGrade[this.selectedGrade] = this.subjects;
+        // 선택 초기화
+        this.selectedIndex = null;
       } else {
         // 선택한 과목이 없을 경우 에러 메세지 출력
         this.errorMessage = '삭제할 과목을 선택해주세요.';
       }
     },
 
-     // 과목 선택
-     selectSubject(index) {
+    // 과목 선택
+    selectSubject(index) {
       //console.log('선택된 목록의 인덱스: ', index);
       console.log(event.target.className);
       this.selectedIndex = index;
@@ -406,8 +425,12 @@ export default {
       if (average >= 60) return 'D0';
       return 'F';
     },
-  }
+  },
 
+  // 컴포넌트 로드 시 초기 학년 데이터 설정
+  mounted() {
+    this.selectGrade();
+  }
 }
 </script>
 
@@ -493,7 +516,7 @@ tfoot {
 }
 
 /* 선택된 행에 파란색 테두리 적용 */
-.selected {
-  border: 1px solid blue !important;
+::v-deep .selected {
+  background-color: #fc9292 !important;
 }
 </style>
