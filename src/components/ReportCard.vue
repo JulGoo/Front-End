@@ -1,8 +1,8 @@
 <template>
   <div class="intro">
-    <h3></h3>
+    <h3>202244026 구예림</h3>
     <p>
-      [] 2024 Front-End 개발실습 <strong> 과제 1. 학점관리 사이트 만들기</strong>
+      [3학년 A반] 2024 Front-End 개발실습 <strong> 과제 2. 학점관리 사이트 만들기</strong>
     </p>
   </div>
 
