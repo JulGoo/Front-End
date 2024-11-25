@@ -122,8 +122,8 @@
           <td v-if="newSubject.credit == 1"></td>
           <td v-if="newSubject.credit == 1">
             <select v-model="newSubject.grade">
-              <option value="P">Pass</option>
-              <option value="NP">Non Pass</option>
+              <option value="P">P</option>
+              <option value="NP">NP</option>
             </select>
           </td>
         </tr>
@@ -175,6 +175,7 @@ export default {
         assignment: 0,
         midterm: 0,
         final: 0,
+        grade: "P"  // 학점이 1일때 성적 기본값 "P"로 설정
       },
       // 과목 추가 입력란 표시 여부
       addingSubject: false,
@@ -309,6 +310,8 @@ export default {
         this.subjectsByGrade[this.selectedGrade] = this.subjects;
         // 선택 초기화
         this.selectedIndex = null;
+        // 오류 메시지 초기화
+        this.errorMessage = '';
       } else {
         // 선택한 과목이 없을 경우 에러 메세지 출력
         this.errorMessage = '삭제할 과목을 선택해주세요.';
@@ -318,8 +321,15 @@ export default {
     // 과목 선택
     selectSubject(index) {
       //console.log('선택된 목록의 인덱스: ', index);
-      console.log(event.target.className);
-      this.selectedIndex = index;
+      // console.log(event.target.className);
+      // this.selectedIndex = index;
+      if (this.selectedIndex === index) {
+        // 이미 선택된 인덱스라면 선택 해제
+        this.selectedIndex = null;
+      } else {
+        // 새로운 인덱스를 선택
+        this.selectedIndex = index;
+      }
     },
 
     // 총점 계산
@@ -517,6 +527,6 @@ tfoot {
 
 /* 선택된 행에 파란색 테두리 적용 */
 ::v-deep .selected {
-  background-color: #fc9292 !important;
+  background-color: hwb(0 83% 1%) !important;
 }
 </style>
