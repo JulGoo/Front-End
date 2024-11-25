@@ -122,8 +122,8 @@
           <td v-if="newSubject.credit == 1"></td>
           <td v-if="newSubject.credit == 1">
             <select v-model="newSubject.grade">
-              <option value="P">P</option>
-              <option value="NP">NP</option>
+              <option value="P">Pass</option>
+              <option value="NP">Non Pass</option>
             </select>
           </td>
         </tr>
